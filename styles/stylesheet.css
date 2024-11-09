@@ -1,0 +1,28 @@
+:root {
+    --pixel-colour: ;
+}
+
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(var(--col), 20px); /* 10 columns of 50px */
+    grid-template-rows: repeat(var(--row), 20px);    /* 10 rows of 50px */
+}
+
+.pixel {
+    border: 1px black solid;
+    background-color: var(--pixel-colour);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
