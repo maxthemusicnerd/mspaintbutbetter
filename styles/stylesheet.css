@@ -26,3 +26,9 @@ body {
     align-items: center;
     cursor: pointer; /* Change cursor to pointer on hover */
 }
+
+.colours{
+    border: solid black 1px;
+    width: 55px;
+    height: 54px;
+}
