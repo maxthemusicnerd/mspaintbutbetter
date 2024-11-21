@@ -48,9 +48,13 @@ class Canvas {
 
     onPixelHover(pixel) {
         if (is_clicked == true) {
-            pixel.colour = selected_colour
-            document.getElementById(pixel.position).style.backgroundColor = pixel.colour
-            edited_array.push(pixel)
+            switch(brush_stroke) {
+            case "pencil":
+                pixel.colour = selected_colour
+                document.getElementById(pixel.position).style.backgroundColor = pixel.colour
+                edited_array.push(pixel)
+            //more cases when necessary
+            }
         }
     }
 
@@ -64,7 +68,7 @@ class Canvas {
     }
 
     setUpPallete(){
-        const colours = ["black","red","orange","yellow","green", "turquoise", "blue", "brown", "purple"]
+        const colours = ["black","red","orange","magenta","lime", "turquoise", "blue", "brown", "darkgreen"]
 
         let pallete = document.createElement('div');
         pallete.className = 'pallete';
@@ -85,6 +89,7 @@ class Canvas {
 
 //user controls
 let is_clicked = false
+let brush_stroke = 'pencil'
 
 document.body.addEventListener("mousedown", (event) => {
     if (event.button === 0) {
@@ -99,6 +104,10 @@ document.body.addEventListener("mouseup", (event) => {
         console.log('out')
     }
 })
+
+document.addEventListener("dragstart", (event) => {
+    event.preventDefault();
+  });
 
 
 let selected_colour = "black"
