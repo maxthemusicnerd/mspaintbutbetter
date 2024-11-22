@@ -34,7 +34,7 @@ class Canvas {
                 document.documentElement.style.setProperty('--pixel-colour', new_pixel.colour);
                 css_pixel.addEventListener('mouseenter', () => {
                    this.onPixelHover(new_pixel);
-                   console.log("enter" + css_pixel.id)
+                   //console.log("enter" + css_pixel.id)
                 });  
                 css_pixel.addEventListener('click', () => {
                     this.onPixelClick(new_pixel);
@@ -52,7 +52,10 @@ class Canvas {
             case "pencil":
                 pixel.colour = selected_colour
                 document.getElementById(pixel.position).style.backgroundColor = pixel.colour
-                edited_array.push(pixel)
+                autofill_array.push(pixel)
+                if (autofill_array.length == 2) {
+                    pencilAutofill()
+                }
             //more cases when necessary
             }
         }
@@ -68,7 +71,7 @@ class Canvas {
     }
 
     setUpPallete(){
-        const colours = ["black","red","orange","magenta","lime", "turquoise", "blue", "brown", "darkgreen"]
+        const colours = ["black","red","orange","#ffec3f","lime", "turquoise", "blue", "purple", "darkgreen"]
 
         let pallete = document.createElement('div');
         pallete.className = 'pallete';
@@ -94,14 +97,15 @@ let brush_stroke = 'pencil'
 document.body.addEventListener("mousedown", (event) => {
     if (event.button === 0) {
         is_clicked = true
-        console.log('in')
+        //console.log('in')
     }
 })
 
 document.body.addEventListener("mouseup", (event) => {
     if (event.button === 0) {
         is_clicked = false
-        console.log('out')
+        autofill_array = []
+        //console.log('out')
     }
 })
 
@@ -149,25 +153,34 @@ MainCanvas.setUpCanvas(MainCanvas)
 //test code
 
 function getPixelByPosition(x, y) {
+    let correct_pixel = -1;
     MainCanvas.pixel_list.forEach(pixel => {
+        //console.log(pixel.position[0],pixel.position[1], x, y)
         if (pixel.position[0] == x && pixel.position[1] == y)
-            return pixel
+            //console.log(pixel.position[0],pixel.position[1], x, y)
+            correct_pixel = pixel
     })
-    console.log("pixel not found")
+    if (correct_pixel == -1) {
+        console.log("pixel not found")
+    }
+    return correct_pixel 
 }
 
 
 
-let edited_array = []
+let autofill_array = []
 
-function test() {
+
+//this attempts to make sure when the mouse moves fast, it still fills in the space between in a single click
+function pencilAutofill() {
     let x = false
     let y = false
+    //console.log(edited_array)
+    pixel1position = autofill_array[0].position;
+    pixel2position = autofill_array[1].position;
 
-    pixel1position = edited_array[0].position;
-    pixel2position = edited_array[1].position;
-    distance_x = pixel1position[0] - pixel2position[0]
-    distance_y = pixel1position[1] - pixel2position[1]
+    distance_x = pixel2position[0] - pixel1position[0]
+    distance_y = pixel2position[1] - pixel1position[1]
     if (-1 <= distance_x && distance_x <= 1) {
         x = true
     }
@@ -175,26 +188,85 @@ function test() {
         y = true
     }
 
-    if (x == false | y == false) {
-        let x_fill = []
-        let y_fill = []
+    if (x == false || y == false) {
+        let counterx = pixel1position[0]
+        let countery = pixel1position[1]
+        let xincrement; 
 
-        for (i = pixel1position[0]; i != pixel2position[0]; i += (distance_x / Math.abs(distance_x))) {
-            x_fill.push(i)
-        }
-        for (i = pixel1position[1]; i != pixel2position[1]; i += (distance_y / Math.abs(distance_y))) {
-            y_fill.push(i)
-        }
-        if (x_fill.length > y_fill.length) {
+        console.log(Math.abs(distance_y))
+        if (Math.abs(distance_x) > Math.abs(distance_y)) {
+            while (counterx != pixel2position[0]) {
+                if (counterx < pixel2position[0]) {
+                    xincrement = 1
+                } else {
+                    xincrement = -1
+                }
+                counterx += xincrement
+                
 
-        } else if (x_fill.length < y_fill.length) {
+                //console.log(counterx, countery)
+                let thispixel = getPixelByPosition(counterx, countery)
+                
+                if (thispixel != -1) {
+                    console.log(thispixel.position)
+                    thispixel.colour = selected_colour
+                    
+                    //console.log(document.getElementById(thispixel.position).style.backgroundColour)
+                    document.getElementById(thispixel.position).style.backgroundColor = selected_colour
+                }
+            }
+        } else if (Math.abs(distance_x) < Math.abs(distance_y)){
+            while (countery != pixel2position[1]) {
+                if (countery < pixel2position[1]) {
+                    yincrement = 1
+                } else {
+                    yincrement = -1
+                }
+                
+                countery += yincrement
 
-        } else {
-            for (i = x_fill[0]; i != 1; i++) {}
+                //console.log(counterx, countery)
+                let thispixel = getPixelByPosition(counterx, countery)
+                
+                if (thispixel != -1) {
+                    console.log(thispixel.position)
+                    thispixel.colour = selected_colour
+                    
+                    //console.log(document.getElementById(thispixel.position).style.backgroundColour)
+                    document.getElementById(thispixel.position).style.backgroundColor = selected_colour
+                }
+            }
+        } else if (Math.abs(distance_x) == Math.abs(distance_y)) {
+            while (countery != pixel2position[1] && counterx != pixel2position[0]) {
+                if (countery < pixel2position[1]) {
+                    yincrement = 1
+                } else {
+                    yincrement = -1
+                }
+                if (counterx < pixel2position[0]) {
+                    xincrement = 1
+                } else {
+                    xincrement = -1
+                }
+                
+                counterx += xincrement
+                countery += yincrement
+
+                //console.log(counterx, countery)
+                let thispixel = getPixelByPosition(counterx, countery)
+                
+                if (thispixel != -1) {
+                    console.log(thispixel.position)
+                    thispixel.colour = selected_colour
+                    
+                    //console.log(document.getElementById(thispixel.position).style.backgroundColour)
+                    document.getElementById(thispixel.position).style.backgroundColor = selected_colour
+                }
+            }
         }
     }
-    
-    edited_array = []
+    //edited_array = []
+    autofill_array.shift()
 }
 //MainCanvas.pixel_list.forEach(printer)
 
