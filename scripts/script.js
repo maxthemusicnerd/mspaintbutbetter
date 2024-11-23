@@ -11,6 +11,8 @@ class Pixel{
 
 let cached_pixel_array = []
 
+let old_cached_arrays = []
+
 class Canvas {
     constructor(total_rows, total_columns) {
         this.total_rows = total_rows
@@ -64,8 +66,10 @@ class Canvas {
     }
 
     onPixelClick(pixel) {
-        pixel.colour = selected_colour
-        document.getElementById(pixel.position).style.backgroundColor = pixel.colour
+        switch(brush_stroke) {
+            case "pencil":
+                setPixelColor(pixel, selected_colour)
+        }
     }
 
     selectColour(colour){
@@ -102,9 +106,8 @@ let brush_stroke = 'pencil'
 
 document.body.addEventListener("mousedown", (event) => {
     if (event.button === 0) {
-        is_clicked = true
         cached_pixel_array = []
-        //console.log('in')
+        is_clicked = true
     }
 })
 
@@ -112,8 +115,9 @@ document.body.addEventListener("mouseup", (event) => {
     if (event.button === 0) {
         is_clicked = false
         autofill_array = []
-        console.log(cached_pixel_array)
-        //console.log('out')
+        if (cached_pixel_array.length > 0) {
+            old_cached_arrays.push(cached_pixel_array.slice())
+        }
     }
 })
 
@@ -124,7 +128,8 @@ document.addEventListener("dragstart", (event) => {
 
 let selected_colour = "black"
 let saved_colour
-//this is test code to be removed, just wanna be able to change colours
+
+//eraser
 document.body.addEventListener("contextmenu", (event) => {
     // Prevent the default context menu
     event.preventDefault();
@@ -138,21 +143,23 @@ document.body.addEventListener("contextmenu", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-    if (event.key == "u") {
-        undoLastStroke()
+    if (event.ctrlKey && event.key === "z") {
+        event.preventDefault(); 
+        undoLastStroke(); 
     }
-})
+});
 
 
 function undoLastStroke() {
-    
-    cached_pixel_array.forEach(pixel => {
-        //console.log(pixel.position)
-        let old_colour = pixel.colour
-        let old_position = pixel.position
+    if (old_cached_arrays.length > 0) {
+        old_cached_arrays[old_cached_arrays.length - 1].forEach(pixel => {
+            let old_colour = pixel.colour 
+            let old_position = pixel.position
 
-        setPixelColor(getPixelByPosition(old_position[0], old_position[1]), old_colour)
-    })
+            setPixelColor(getPixelByPosition(old_position[0], old_position[1]), old_colour)
+        })
+    }
+    old_cached_arrays.splice((old_cached_arrays.length - 1), 1)
 }
 
 
@@ -179,7 +186,7 @@ MainCanvas.setUpCanvas(MainCanvas)
 
 
 
-//test code
+//quality of life methods
 
 function getPixelByPosition(x, y) {
     for (pixel of MainCanvas.pixel_list) {
@@ -200,14 +207,18 @@ function setPixelColor(pixel, color) {
     document.getElementById(pixel.position).style.backgroundColor = color
 }
 
-let autofill_array = []
-
+function findPixelandSetColour(x, y) {
+    let foundpixel = getPixelByPosition(x, y)
+    if (foundpixel != -1) {
+        setPixelColor(foundpixel, selected_colour)
+    }
+}
 
 //this attempts to make sure when the mouse moves fast, it still fills in the space between in a single click
+let autofill_array = []
 function pencilAutofill() {
     let x = false
     let y = false
-    //console.log(edited_array)
     pixel1position = autofill_array[0].position;
     pixel2position = autofill_array[1].position;
 
@@ -236,11 +247,10 @@ function pencilAutofill() {
                 counterx += xincrement
                 
 
-                //console.log(counterx, countery)
+                
                 let thispixel = getPixelByPosition(counterx, countery)
                 
                 if (thispixel != -1) {
-                    //console.log(thispixel.position)
                     setPixelColor(thispixel, selected_colour)
                 }
             }
@@ -254,11 +264,10 @@ function pencilAutofill() {
                 
                 countery += yincrement
 
-                //console.log(counterx, countery)
+
                 let thispixel = getPixelByPosition(counterx, countery)
                 
                 if (thispixel != -1) {
-                    //console.log(thispixel.position
                     setPixelColor(thispixel, selected_colour)
                 }
             }
@@ -278,11 +287,9 @@ function pencilAutofill() {
                 counterx += xincrement
                 countery += yincrement
 
-                //console.log(counterx, countery)
                 let thispixel = getPixelByPosition(counterx, countery)
                 
                 if (thispixel != -1) {
-                    //console.log(thispixel.position)
                     setPixelColor(thispixel, selected_colour)
                 }
             }
@@ -291,9 +298,4 @@ function pencilAutofill() {
     //edited_array = []
     autofill_array.shift()
 }
-//MainCanvas.pixel_list.forEach(printer)
-
-//function printer(item) {
-//    console.log(item)
-//}
 
