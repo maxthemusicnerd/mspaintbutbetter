@@ -9,6 +9,8 @@ class Pixel{
     }
 }
 
+let cached_pixel_array = []
+
 class Canvas {
     constructor(total_rows, total_columns) {
         this.total_rows = total_rows
@@ -50,11 +52,11 @@ class Canvas {
         if (is_clicked == true) {
             switch(brush_stroke) {
             case "pencil":
-                pixel.colour = selected_colour
-                document.getElementById(pixel.position).style.backgroundColor = pixel.colour
+                setPixelColor(pixel, selected_colour)
                 autofill_array.push(pixel)
+                
                 if (autofill_array.length == 2) {
-                    //pencilAutofill()
+                    pencilAutofill()
                 }
             //more cases when necessary
             }
@@ -96,14 +98,12 @@ class Canvas {
 let is_clicked = false
 let brush_stroke = 'pencil'
 
-let cached_pixel_array
+
 
 document.body.addEventListener("mousedown", (event) => {
     if (event.button === 0) {
-        cached_pixel_array = MainCanvas.pixel_list.map(pixel => 
-            new Pixel([...pixel.position], pixel.colour)
-        );
         is_clicked = true
+        cached_pixel_array = []
         //console.log('in')
     }
 })
@@ -112,6 +112,7 @@ document.body.addEventListener("mouseup", (event) => {
     if (event.button === 0) {
         is_clicked = false
         autofill_array = []
+        console.log(cached_pixel_array)
         //console.log('out')
     }
 })
@@ -181,20 +182,20 @@ MainCanvas.setUpCanvas(MainCanvas)
 //test code
 
 function getPixelByPosition(x, y) {
-    let correct_pixel = -1;
-    MainCanvas.pixel_list.forEach(pixel => {
-        //console.log(pixel.position[0],pixel.position[1], x, y)
-        if (pixel.position[0] == x && pixel.position[1] == y)
-            //console.log(pixel.position[0],pixel.position[1], x, y)
-            correct_pixel = pixel
-    })
-    if (correct_pixel == -1) {
-        console.log("pixel not found")
+    for (pixel of MainCanvas.pixel_list) {
+        if (pixel.position[0] == x && pixel.position[1] == y) {
+            return pixel
+        }       
     }
-    return correct_pixel 
+    console.log("pixel not found")
+    return -1
 }
 
 function setPixelColor(pixel, color) {
+    if (pixel.colour != selected_colour) {
+        let cached_pixel = new Pixel([...pixel.position], pixel.colour)
+        cached_pixel_array.push(cached_pixel)
+    }
     pixel.colour = color 
     document.getElementById(pixel.position).style.backgroundColor = color
 }
@@ -240,10 +241,7 @@ function pencilAutofill() {
                 
                 if (thispixel != -1) {
                     //console.log(thispixel.position)
-                    thispixel.colour = selected_colour
-                    
-                    //console.log(document.getElementById(thispixel.position).style.backgroundColour)
-                    document.getElementById(thispixel.position).style.backgroundColor = selected_colour
+                    setPixelColor(thispixel, selected_colour)
                 }
             }
         } else if (Math.abs(distance_x) < Math.abs(distance_y)){
@@ -260,11 +258,8 @@ function pencilAutofill() {
                 let thispixel = getPixelByPosition(counterx, countery)
                 
                 if (thispixel != -1) {
-                    //console.log(thispixel.position)
-                    thispixel.colour = selected_colour
-                    
-                    //console.log(document.getElementById(thispixel.position).style.backgroundColour)
-                    document.getElementById(thispixel.position).style.backgroundColor = selected_colour
+                    //console.log(thispixel.position
+                    setPixelColor(thispixel, selected_colour)
                 }
             }
         } else if (Math.abs(distance_x) == Math.abs(distance_y)) {
@@ -288,10 +283,7 @@ function pencilAutofill() {
                 
                 if (thispixel != -1) {
                     //console.log(thispixel.position)
-                    thispixel.colour = selected_colour
-                    
-                    //console.log(document.getElementById(thispixel.position).style.backgroundColour)
-                    document.getElementById(thispixel.position).style.backgroundColor = selected_colour
+                    setPixelColor(thispixel, selected_colour)
                 }
             }
         }
