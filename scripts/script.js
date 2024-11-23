@@ -54,7 +54,7 @@ class Canvas {
                 document.getElementById(pixel.position).style.backgroundColor = pixel.colour
                 autofill_array.push(pixel)
                 if (autofill_array.length == 2) {
-                    pencilAutofill()
+                    //pencilAutofill()
                 }
             //more cases when necessary
             }
@@ -90,12 +90,19 @@ class Canvas {
     }
 }
 
-//user controls
+//USER CONTROLS
+//++++++++++++++
+//ALL USER OPERATIONS ARE HERE 
 let is_clicked = false
 let brush_stroke = 'pencil'
 
+let cached_pixel_array
+
 document.body.addEventListener("mousedown", (event) => {
     if (event.button === 0) {
+        cached_pixel_array = MainCanvas.pixel_list.map(pixel => 
+            new Pixel([...pixel.position], pixel.colour)
+        );
         is_clicked = true
         //console.log('in')
     }
@@ -127,7 +134,28 @@ document.body.addEventListener("contextmenu", (event) => {
         selected_colour = saved_colour
     }
 
-  });
+});
+
+document.addEventListener("keydown", (event) => {
+    if (event.key == "u") {
+        undoLastStroke()
+    }
+})
+
+
+function undoLastStroke() {
+    
+    cached_pixel_array.forEach(pixel => {
+        //console.log(pixel.position)
+        let old_colour = pixel.colour
+        let old_position = pixel.position
+
+        setPixelColor(getPixelByPosition(old_position[0], old_position[1]), old_colour)
+    })
+}
+
+
+
 
 //canvas controls
 const total_rows = 100
@@ -166,7 +194,10 @@ function getPixelByPosition(x, y) {
     return correct_pixel 
 }
 
-
+function setPixelColor(pixel, color) {
+    pixel.colour = color 
+    document.getElementById(pixel.position).style.backgroundColor = color
+}
 
 let autofill_array = []
 
@@ -193,7 +224,7 @@ function pencilAutofill() {
         let countery = pixel1position[1]
         let xincrement; 
 
-        console.log(Math.abs(distance_y))
+        
         if (Math.abs(distance_x) > Math.abs(distance_y)) {
             while (counterx != pixel2position[0]) {
                 if (counterx < pixel2position[0]) {
@@ -208,7 +239,7 @@ function pencilAutofill() {
                 let thispixel = getPixelByPosition(counterx, countery)
                 
                 if (thispixel != -1) {
-                    console.log(thispixel.position)
+                    //console.log(thispixel.position)
                     thispixel.colour = selected_colour
                     
                     //console.log(document.getElementById(thispixel.position).style.backgroundColour)
@@ -229,7 +260,7 @@ function pencilAutofill() {
                 let thispixel = getPixelByPosition(counterx, countery)
                 
                 if (thispixel != -1) {
-                    console.log(thispixel.position)
+                    //console.log(thispixel.position)
                     thispixel.colour = selected_colour
                     
                     //console.log(document.getElementById(thispixel.position).style.backgroundColour)
@@ -256,7 +287,7 @@ function pencilAutofill() {
                 let thispixel = getPixelByPosition(counterx, countery)
                 
                 if (thispixel != -1) {
-                    console.log(thispixel.position)
+                    //console.log(thispixel.position)
                     thispixel.colour = selected_colour
                     
                     //console.log(document.getElementById(thispixel.position).style.backgroundColour)
