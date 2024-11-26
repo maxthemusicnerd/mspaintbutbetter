@@ -56,10 +56,25 @@ class Canvas {
             case "pencil":
                 setPixelColor(pixel, selected_colour)
                 autofill_array.push(pixel)
-                
                 if (autofill_array.length == 2) {
                     pencilAutofill()
                 }
+                break
+            case "thin brush":
+                let pixelx = pixel.position[0]
+                let pixely = pixel.position[1]
+                setPixelColor(pixel, selected_colour)
+                autofill_array.push(pixel)
+                findPixelandSetColour(pixelx - 1, pixely)
+                findPixelandSetColour(pixelx + 1, pixely)
+
+                findPixelandSetColour(pixelx, pixely + 1)
+                findPixelandSetColour(pixelx, pixely - 1)
+                if (autofill_array.length == 2) {
+                    pencilAutofill()
+                }
+                break
+            
             //more cases when necessary
             }
         }
@@ -69,6 +84,18 @@ class Canvas {
         switch(brush_stroke) {
             case "pencil":
                 setPixelColor(pixel, selected_colour)
+                break
+            case "thin brush":
+                let pixelx = pixel.position[0]
+                let pixely = pixel.position[1]
+                setPixelColor(pixel, selected_colour)
+
+                findPixelandSetColour(pixelx - 1, pixely)
+                findPixelandSetColour(pixelx + 1, pixely)
+
+                findPixelandSetColour(pixelx, pixely + 1)
+                findPixelandSetColour(pixelx, pixely - 1)
+                break
         }
     }
 
@@ -101,11 +128,15 @@ class Canvas {
 //ALL USER OPERATIONS ARE HERE 
 let is_clicked = false
 let brush_stroke = 'pencil'
+brush_stroke = 'thin brush'
 
 
 
 document.body.addEventListener("mousedown", (event) => {
     if (event.button === 0) {
+        if (!old_cached_arrays.includes(cached_pixel_array) && cached_pixel_array.length > 0) {
+            old_cached_arrays.push(cached_pixel_array)
+        }
         cached_pixel_array = []
         is_clicked = true
     }
@@ -117,6 +148,7 @@ document.body.addEventListener("mouseup", (event) => {
         autofill_array = []
         if (cached_pixel_array.length > 0) {
             old_cached_arrays.push(cached_pixel_array.slice())
+            cached_pixel_array = []
         }
     }
 })
@@ -179,13 +211,6 @@ MainCanvas.setUpPallete()
 MainCanvas.setUpCanvas(MainCanvas)
 
 
-
-
-
-
-
-
-
 //quality of life methods
 
 function getPixelByPosition(x, y) {
@@ -217,85 +242,54 @@ function findPixelandSetColour(x, y) {
 //this attempts to make sure when the mouse moves fast, it still fills in the space between in a single click
 let autofill_array = []
 function pencilAutofill() {
-    let x = false
-    let y = false
-    pixel1position = autofill_array[0].position;
-    pixel2position = autofill_array[1].position;
+    let pixel1position = autofill_array[0].position;
+    let pixel2position = autofill_array[1].position;
 
-    distance_x = pixel2position[0] - pixel1position[0]
-    distance_y = pixel2position[1] - pixel1position[1]
-    if (-1 <= distance_x && distance_x <= 1) {
-        x = true
-    }
-    if (-1 <= distance_y && distance_y <= 1) {
-        y = true
-    }
+    let distance_x = Math.abs(pixel2position[0] - pixel1position[0])
+    let distance_y = Math.abs(pixel2position[1] - pixel1position[1])
+    
+    if (distance_x > 1 || distance_y > 1) {
+        let rise = pixel2position[1] - pixel1position[1]
+        let run = pixel2position[0] - pixel1position[0]
+        console.log(rise, run)
+        let hyp = (Math.sqrt((distance_x * distance_x) + (distance_y * distance_y)))
+        let pixels_to_draw = Math.round(hyp)
 
-    if (x == false || y == false) {
-        let counterx = pixel1position[0]
-        let countery = pixel1position[1]
-        let xincrement; 
+        let xinc = 0
+        let yinc = 0
 
+        if (run != 0) {
+            xinc = run / pixels_to_draw
+        }
+        if (rise != 0) {
+            yinc = rise / pixels_to_draw
+        }
+        let moverx = pixel1position[0]
+        let movery = pixel1position[1]
         
-        if (Math.abs(distance_x) > Math.abs(distance_y)) {
-            while (counterx != pixel2position[0]) {
-                if (counterx < pixel2position[0]) {
-                    xincrement = 1
-                } else {
-                    xincrement = -1
-                }
-                counterx += xincrement
-                
+        for(i = 0; i <= pixels_to_draw; i++) {
+            moverx += xinc
+            movery += yinc
 
-                
-                let thispixel = getPixelByPosition(counterx, countery)
-                
-                if (thispixel != -1) {
-                    setPixelColor(thispixel, selected_colour)
-                }
-            }
-        } else if (Math.abs(distance_x) < Math.abs(distance_y)){
-            while (countery != pixel2position[1]) {
-                if (countery < pixel2position[1]) {
-                    yincrement = 1
-                } else {
-                    yincrement = -1
-                }
-                
-                countery += yincrement
+            //console.log(moverx, movery, xinc, yinc)
+            //console.log(Math.round(moverx), Math.round(movery))
+            switch (brush_stroke) {
+                case "pencil":
+                    findPixelandSetColour(Math.round(moverx), Math.round(movery))
+                    break
+                case "thin brush":
+                    //console.log('active')
+                    findPixelandSetColour(Math.round(moverx), Math.round(movery))
 
+                    findPixelandSetColour(Math.round(moverx) + 1, Math.round(movery))
+                    findPixelandSetColour(Math.round(moverx) - 1, Math.round(movery))
 
-                let thispixel = getPixelByPosition(counterx, countery)
-                
-                if (thispixel != -1) {
-                    setPixelColor(thispixel, selected_colour)
-                }
-            }
-        } else if (Math.abs(distance_x) == Math.abs(distance_y)) {
-            while (countery != pixel2position[1] && counterx != pixel2position[0]) {
-                if (countery < pixel2position[1]) {
-                    yincrement = 1
-                } else {
-                    yincrement = -1
-                }
-                if (counterx < pixel2position[0]) {
-                    xincrement = 1
-                } else {
-                    xincrement = -1
-                }
-                
-                counterx += xincrement
-                countery += yincrement
-
-                let thispixel = getPixelByPosition(counterx, countery)
-                
-                if (thispixel != -1) {
-                    setPixelColor(thispixel, selected_colour)
-                }
+                    findPixelandSetColour(Math.round(moverx), Math.round(movery) + 1)
+                    findPixelandSetColour(Math.round(moverx), Math.round(movery) - 1)
+                    break
             }
         }
     }
-    //edited_array = []
     autofill_array.shift()
 }
 
